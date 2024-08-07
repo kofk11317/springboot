@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.server.testinterface.TestMapper">
+
+<!--    select id 를 그대로 함수명으로 사용-->
+    <select id="testConnection" resultType="int">
+        SELECT COUNT(*) FROM create_news
+    </select>
+<!--list<string>인데 여기는 맞춰줄 필요없음?-->
+    <select id="getDescriptions" resultType="String">
+        SELECT DESCRIPTION FROM create_news
+    </select>
+
+<!--    회원가입-->
+<!--    parametertype은 dto 의 변수 이름이 db와 같다면 굳이 안넣어도됨 -->
+    <insert id='SignUp'>
+        INSERT INTO MEMBER (MEMBER_NUM,ID, PASSWORD, NAME, EMAIL, AGE, GENDER,SIGNUP_AT)
+        VALUES (SEQ_MEMBER_NUM.NEXTVAL, #{id}, #{password}, #{name}, #{email}, #{age}, #{gender}, SYSTIMESTAMP)
+</insert>
+
+
+<!--&lt;!&ndash;로그인&ndash;&gt;-->
+<!--    <insert id='SignIn'>-->
+<!--        INSERT INTO member (id, password, name, email, age, gender)-->
+<!--        VALUES (#{id}, #{password}, #{name}, #{email}, #{age}, #{gender})-->
+<!--    </insert>-->
+<!--이메일 중복체크-->
+    <select id="checkEmailExists" resultType="int">
+        SELECT COUNT(*) FROM member WHERE email = #{email}
+    </select>
+</mapper>

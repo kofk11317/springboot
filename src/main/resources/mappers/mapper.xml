@@ -19,13 +19,13 @@
 </insert>
 
 
-<!--&lt;!&ndash;로그인&ndash;&gt;-->
-<!--    <insert id='SignIn'>-->
-<!--        INSERT INTO member (id, password, name, email, age, gender)-->
-<!--        VALUES (#{id}, #{password}, #{name}, #{email}, #{age}, #{gender})-->
-<!--    </insert>-->
+<!--로그인-->
+        <select id="SignIn" resultType="int">
+            SELECT COUNT(*) FROM MEMBER WHERE ID = #{id} AND PASSWORD = #{password}
+        </select>
 <!--이메일 중복체크-->
     <select id="checkEmailExists" resultType="int">
+-- 이메일이 같다면  count(*)가 1이상이면 중복이라는 뜻
         SELECT COUNT(*) FROM member WHERE email = #{email}
     </select>
 </mapper>

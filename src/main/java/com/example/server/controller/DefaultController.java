@@ -26,7 +26,7 @@ public class DefaultController
         return "hello wdsdforld!";
     }
 
-//    db 연결할때 사용
+//    db 연결할때 확인용
 @Autowired
 private TestMapper testMapper;
     @GetMapping("/db")
@@ -40,10 +40,10 @@ private TestMapper testMapper;
             return "데이터베이스 연결 실패: " + e.getMessage();
         }
     }
-
+//   뉴스 기사 가져오기
     @Autowired
     private TestMapper testMapper2;
-    @GetMapping("/create_news")
+    @GetMapping("/getnews")
     @ResponseBody // 리턴값이 view가 아닌 데이터 자체임을 나타냄
     public List<String> getNews()
     {
@@ -80,6 +80,86 @@ private TestMapper testMapper;
         return "회원가입 성공!";
         }
     }
+
+    @Autowired
+    private TestMapper testMapper4;
+
+    @PostMapping("/signin")
+    @ResponseBody
+    public String login(@RequestBody Member member) {
+//       멤버 객체에서 필요한 것만 뽑아다 사용가능
+//        아이디가 같고 비밀번호가 다른 경우?
+        if (testMapper4.SignIn(member.getId(), member.getPassword()) > 0) {
+            return "로그인 성공";
+        } else {
+            return "아이디 또는 비밀번호가 잘못되었습니다.";
+        }
+    }
+//로그아웃기능 구현-세션종료 형식으로
+
+
+//   개인정보 수정(이메일,관심사)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

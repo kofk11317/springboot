@@ -12,7 +12,8 @@ import lombok.ToString;
 @ToString
 public class Member     {
 // DTO(Data Transfer Object) 클래스는 데이터베이스 테이블의 데이터를 전달하는 목적으로 사용
-private String id;
+    private int memberNum;
+    private String id;
     private String password;
     private String name;
     private String email;

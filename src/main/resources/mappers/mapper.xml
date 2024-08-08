@@ -30,4 +30,49 @@
 -- 이메일이 같다면  count(*)가 1이상이면 중복이라는 뜻
         SELECT COUNT(*) FROM member WHERE email = #{email}
     </select>
+
+
+    <!-- 뉴스기사 -->
+    <resultMap id="createNewsResultMap" type="com.example.server.dto.CreateNews">
+        <result property="createNewsNum" column="CREATE_NEWS_NUM"/>
+        <result property="category" column="CATEGORY"/>
+        <result property="createNewsDate" column="CREATE_NEWS_DATE"/>
+        <result property="title" column="TITLE"/>
+        <result property="description" column="DESCRIPTION"/>
+        <result property="joind" column="JOIND"/>
+        <result property="likeCount" column="LIKE_COUNT"/>
+        <result property="dislikeCount" column="DISLIKE_COUNT"/>
+        <result property="pubDate" column="PUB_DATE"/>
+        <result property="keyword" column="KEYWORD"/>
+        <result property="clusterNum" column="CLUSTER_NUM"/>
+        <result property="literaryStyle" column="LITERARY_STYLE"/>
+        <result property="thumbnailPrompt" column="THUMBNAIL_PROMPT"/>
+    </resultMap>
+
+    <select id="selectCreateNewsList" resultMap="createNewsResultMap">
+        SELECT CREATE_NEWS_NUM, CATEGORY, CREATE_NEWS_DATE, TITLE, DESCRIPTION, JOIND,
+        LIKE_COUNT, DISLIKE_COUNT, PUB_DATE, KEYWORD, CLUSTER_NUM, LITERARY_STYLE, THUMBNAIL_PROMPT
+        FROM create_news
+    </select>
+
+    <select id="selectCreateNewsDetail" resultMap="createNewsResultMap">
+        SELECT CREATE_NEWS_NUM, CATEGORY, CREATE_NEWS_DATE, TITLE, DESCRIPTION, JOIND,
+        LIKE_COUNT, DISLIKE_COUNT, PUB_DATE, KEYWORD, CLUSTER_NUM, LITERARY_STYLE, THUMBNAIL_PROMPT
+        FROM create_news
+        WHERE CREATE_NEWS_NUM #{id}
+    </select>
+
+    <select id="selectCreateNewsListPaginated" resultMap="createNewsResultMap">
+        SELECT *
+            FROM (
+            SELECT *
+            FROM create_news
+            ORDER BY CREATE_NEWS_NUM DESC
+        )
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <select id="countCreateNews" resultType="long">
+        SELECT COUNT(*) FROM create_news
+    </select>
 </mapper>

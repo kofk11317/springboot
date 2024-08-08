@@ -1,5 +1,6 @@
 package com.example.server.testinterface;
 
+import com.example.server.dto.CreateNews;
 import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
@@ -12,6 +13,9 @@ public interface TestMapper
    void SignUp(String id, String password, String name, String email, int age, String gender);
    int SignIn(String id, String password);
 
+   List<CreateNews> selectCreateNewsList();
+   List<CreateNews> selectCreateNewsListPaginated(int offset, int limit);
+   long countCreateNews();
 }
 
 

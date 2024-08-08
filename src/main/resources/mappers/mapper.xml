@@ -53,6 +53,13 @@
         FROM create_news
     </select>
 
+    <select id="selectCreateNewsDetail" resultMap="createNewsResultMap">
+        SELECT CREATE_NEWS_NUM, CATEGORY, CREATE_NEWS_DATE, TITLE, DESCRIPTION, JOIND,
+        LIKE_COUNT, DISLIKE_COUNT, PUB_DATE, KEYWORD, CLUSTER_NUM, LITERARY_STYLE, THUMBNAIL_PROMPT
+        FROM create_news
+        WHERE CREATE_NEWS_NUM #{id}
+    </select>
+
     <select id="selectCreateNewsListPaginated" resultMap="createNewsResultMap">
         SELECT *
             FROM (

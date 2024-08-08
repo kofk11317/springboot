@@ -24,7 +24,7 @@ public class ApiController {
 
     @GetMapping("/api/createNews/list")
     @ResponseBody
-    public ResponseEntity<?> getNews(@RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<?> getCreateNewsList(@RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "10") int size) {
         try {
             int offset = page * size;
@@ -45,6 +45,20 @@ public class ApiController {
             response.put("totalPages", totalPages);
 
             return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("데이터베이스 연결 실패: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/api/createNews/:id")
+    @ResponseBody
+    public ResponseEntity<?> getCreateNewsDetail(@RequestParam int id) {
+        try {
+
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("데이터베이스 연결 실패: ");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("데이터베이스 연결 실패: " + e.getMessage());

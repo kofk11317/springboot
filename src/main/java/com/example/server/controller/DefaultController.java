@@ -3,6 +3,7 @@ package com.example.server.controller;
 import com.example.server.dto.Member;
 import com.example.server.testinterface.TestMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 //192.168.0.81
@@ -21,12 +23,6 @@ import java.util.List;
 public class DefaultController
 {
 
-    @GetMapping("/session/invalidate")
-    @ResponseBody
-    public String sessioninvalidate(HttpSession session) {
-        session.invalidate();
-        return "세션을 종료합니다.";
-    }
 
 
     @GetMapping("/")
@@ -38,9 +34,10 @@ public class DefaultController
             return "Hello, World!";  // 로그인 안된 상태
         }
     }
-//    db 연결할때 확인용
-@Autowired
-private TestMapper testMapper;
+
+    @Autowired
+    private TestMapper testMapper;
+
     @GetMapping("/db")
     @ResponseBody // 리턴값이 view가 아닌 데이터 자체임을 나타냄
     public String testDbConnection()
@@ -106,7 +103,20 @@ private TestMapper testMapper;
             return "아이디 또는 비밀번호가 잘못되었습니다.";
         }
     }
-//로그아웃기능 구현-세션종료 형식으로
+
+
+
+
+    //로그아웃기능 구현-세션종료 형식으로
+
+//로그아웃 버튼 누르면 이 주소가 호출되고 세션을 종료하고 메인페이지로 리다이렉트
+    @GetMapping("/logout")
+    @ResponseBody // restful api에서는 redirect를 사용하지 않음
+    public void sessionInvalidate(HttpSession session, HttpServletResponse response) throws IOException {
+        session.invalidate();
+        response.sendRedirect("http://localhost:8080");
+    }
+
 
 
 //   개인정보 수정(이메일,관심사)

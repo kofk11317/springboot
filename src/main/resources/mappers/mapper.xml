@@ -47,27 +47,56 @@
         <result property="clusterNum" column="CLUSTER_NUM"/>
         <result property="literaryStyle" column="LITERARY_STYLE"/>
         <result property="thumbnailPrompt" column="THUMBNAIL_PROMPT"/>
+        <result property="thumbnailData" column="THUMBNAIL_DATA"/>
     </resultMap>
 
     <select id="selectCreateNewsList" resultMap="createNewsResultMap">
-        SELECT CREATE_NEWS_NUM, CATEGORY, CREATE_NEWS_DATE, TITLE, DESCRIPTION, JOIND,
-        LIKE_COUNT, DISLIKE_COUNT, PUB_DATE, KEYWORD, CLUSTER_NUM, LITERARY_STYLE, THUMBNAIL_PROMPT
+        SELECT *
         FROM create_news
     </select>
 
     <select id="selectCreateNewsDetail" resultMap="createNewsResultMap">
-        SELECT CREATE_NEWS_NUM, CATEGORY, CREATE_NEWS_DATE, TITLE, DESCRIPTION, JOIND,
-        LIKE_COUNT, DISLIKE_COUNT, PUB_DATE, KEYWORD, CLUSTER_NUM, LITERARY_STYLE, THUMBNAIL_PROMPT
-        FROM create_news
-        WHERE CREATE_NEWS_NUM #{id}
+        SELECT
+        cn.CREATE_NEWS_NUM,
+        cn.CATEGORY,
+        cn.CREATE_NEWS_DATE,
+        cn.TITLE,
+        cn.DESCRIPTION,
+        cn.JOIND,
+        cn.LIKE_COUNT,
+        cn.DISLIKE_COUNT,
+        cn.PUB_DATE,
+        cn.KEYWORD,
+        cn.CLUSTER_NUM,
+        cn.LITERARY_STYLE,
+        cn.THUMBNAIL_PROMPT,
+        th.THUMBNAIL_DATA
+        FROM CREATE_NEWS cn
+        LEFT JOIN THUMBNAIL th ON cn.CREATE_NEWS_NUM = th.CREATE_NEWS_NUM
+        WHERE cn.CREATE_NEWS_NUM = #{id}
     </select>
 
     <select id="selectCreateNewsListPaginated" resultMap="createNewsResultMap">
         SELECT *
             FROM (
-            SELECT *
-            FROM create_news
-            ORDER BY CREATE_NEWS_NUM DESC
+            SELECT
+                cn.CREATE_NEWS_NUM,
+                cn.CATEGORY,
+                cn.CREATE_NEWS_DATE,
+                cn.TITLE,
+                cn.DESCRIPTION,
+                cn.JOIND,
+                cn.LIKE_COUNT,
+                cn.DISLIKE_COUNT,
+                cn.PUB_DATE,
+                cn.KEYWORD,
+                cn.CLUSTER_NUM,
+                cn.LITERARY_STYLE,
+                cn.THUMBNAIL_PROMPT,
+                th.THUMBNAIL_DATA
+                FROM CREATE_NEWS cn
+                LEFT JOIN THUMBNAIL th ON cn.CREATE_NEWS_NUM = th.CREATE_NEWS_NUM
+                ORDER BY cn.CREATE_NEWS_NUM DESC
         )
         OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
     </select>

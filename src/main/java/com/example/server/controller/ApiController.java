@@ -4,16 +4,15 @@ import com.example.server.dto.CreateNews;
 import com.example.server.testinterface.TestMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -35,6 +34,12 @@ public class ApiController {
                             && news.getDescription() != null && !news.getDescription().isEmpty())
                     .toList();
 
+            for (CreateNews news : filteredResult) {
+                if (news.getThumbnailData() != null) {
+                    news.setThumbnailURL("/api/createNews/thumbnail/" + news.getCreateNewsNum());
+                }
+            }
+
             long totalCount = testMapper.countCreateNews();
             int totalPages = (int) Math.ceil((double) totalCount / size);
 
@@ -51,17 +56,37 @@ public class ApiController {
         }
     }
 
-    @GetMapping("/api/createNews/:id")
+    @GetMapping("/api/createNews/detail/{id}")
     @ResponseBody
-    public ResponseEntity<?> getCreateNewsDetail(@RequestParam int id) {
+    public ResponseEntity<?> getCreateNewsDetail(@PathVariable int id) {
         try {
+            CreateNews createNews = testMapper.selectCreateNewsDetail(id);
 
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("데이터베이스 연결 실패: ");
+            if (createNews != null) {
+                if(createNews.getThumbnailData() != null) {
+                    String base64Image = Base64.getEncoder().encodeToString(createNews.getThumbnailData());
+                    createNews.setThumbnailData(base64Image.getBytes());
+                    createNews.setThumbnailURL("/api/createNews/thumbnail/" + id);
+                }
+                return ResponseEntity.ok(createNews);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("해당 ID의 뉴스를 찾을 수 없습니다.");
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("데이터베이스 연결 실패: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/api/createNews/thumbnail/{id}")
+    public ResponseEntity<byte[]> getImage(@PathVariable int id) {
+        CreateNews news = testMapper.selectCreateNewsDetail(id);
+        if (news != null && news.getThumbnailData() != null) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG) // 또는 적절한 미디어 타입
+                    .body(news.getThumbnailData());
+        }
+        return ResponseEntity.notFound().build();
     }
 }

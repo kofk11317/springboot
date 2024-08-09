@@ -24,4 +24,6 @@ public class CreateNews {
     private String keyword;
     private String literaryStyle;
     private String thumbnailPrompt;
+    private byte[] thumbnailData;
+    private String thumbnailURL;
 }

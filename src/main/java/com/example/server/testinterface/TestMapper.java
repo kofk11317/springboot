@@ -14,6 +14,7 @@ public interface TestMapper
    void SignUp(String id, String password, String name, String email, int age, String gender, String mainInterest, String subInterest);
    List<CreateNews> selectCreateNewsList();
    List<CreateNews> selectCreateNewsListPaginated(int offset, int limit);
+   CreateNews selectCreateNewsDetail(int id);
    long countCreateNews();
    Member SignIn(String id, String password);
 }

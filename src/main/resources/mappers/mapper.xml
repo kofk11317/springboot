@@ -13,8 +13,8 @@
 <!--    회원가입-->
 <!--    parametertype은 dto 의 변수 이름이 db와 같다면 굳이 안넣어도됨 -->
     <insert id='SignUp'>
-        INSERT INTO MEMBER (MEMBER_NUM,ID, PASSWORD, NAME, EMAIL, AGE, GENDER,SIGNUP_AT)
-        VALUES (SEQ_MEMBER_NUM.NEXTVAL, #{id}, #{password}, #{name}, #{email}, #{age}, #{gender}, SYSTIMESTAMP)
+        INSERT INTO MEMBER (MEMBER_NUM,ID, PASSWORD, NAME, EMAIL, AGE, GENDER,SIGNUP_AT,MAIN_INTEREST,SUB_INTEREST)
+        VALUES (SEQ_MEMBER_NUM.NEXTVAL, #{id}, #{password}, #{name}, #{email}, #{age}, #{gender}, SYSTIMESTAMP,#{mainInterest},#{subInterest})
 </insert>
 
 

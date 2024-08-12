@@ -20,5 +20,8 @@ public class Member
     private String email;
     private int age;
     private String gender;
+    private String mainInterest;
+    private String subInterest;
+
 
 }

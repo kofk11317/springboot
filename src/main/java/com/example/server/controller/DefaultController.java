@@ -76,13 +76,14 @@ public class DefaultController
     public String signup(@RequestBody Member member)
 
     {
+//        이메일 중복체크
         if (testMapper.checkEmailExists(member.getEmail()) > 0)
         {
             return "이미 존재하는 이메일입니다.";
         }
         else
         {
-        testMapper.SignUp(member.getId(), member.getPassword(), member.getName(), member.getEmail(), member.getAge(), member.getGender())    ;
+        testMapper.SignUp(member.getId(), member.getPassword(), member.getName(), member.getEmail(), member.getAge(), member.getGender(),member.getMainInterest(),member.getSubInterest());
         return "회원가입 성공!";
         }
     }

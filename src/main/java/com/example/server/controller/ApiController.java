@@ -61,7 +61,6 @@ public class ApiController {
     public ResponseEntity<?> getCreateNewsDetail(@PathVariable int id) {
         try {
             CreateNews createNews = testMapper.selectCreateNewsDetail(id);
-
             if (createNews != null) {
                 if(createNews.getThumbnailData() != null) {
                     String base64Image = Base64.getEncoder().encodeToString(createNews.getThumbnailData());

@@ -6,11 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -27,7 +24,8 @@ public class DefaultController
 
     @GetMapping("/")
     @ResponseBody
-    public String home(HttpSession session) {
+    public String home(HttpSession session)
+    {
         if (session.getAttribute("userId") != null) {
             return "Hello, " + session.getAttribute("userId") ;  // 로그인 상태
         } else {
@@ -37,18 +35,6 @@ public class DefaultController
 
     @Autowired
     private TestMapper testMapper;
-
-    @GetMapping("/db")
-    @ResponseBody // 리턴값이 view가 아닌 데이터 자체임을 나타냄
-    public String testDbConnection()
-    {
-        try {
-            int result = testMapper.testConnection();
-            return "데이터베이스 연결 성공! 결과: " + result;
-        } catch (Exception e) {
-            return "데이터베이스 연결 실패: " + e.getMessage();
-        }
-    }
 //   뉴스 기사 가져오기
 
     @GetMapping("/getnews")
@@ -90,6 +76,9 @@ public class DefaultController
 
 
 
+
+
+//로그인이 되어야지만 사용가능한 기능들
     @PostMapping("/signin")
     @ResponseBody
     public String login(@RequestBody Member member, HttpSession session, RedirectAttributes redirectAttributes , HttpServletRequest request)
@@ -97,8 +86,11 @@ public class DefaultController
         Member loggInMember = testMapper.SignIn(member.getId(), member.getPassword());
 
 //       멤버 객체에서 필요한 것만 뽑아다 사용가능
-        if (loggInMember != null) {
-            session.setAttribute("userId", loggInMember.getMemberNum());  // 로그인 성공 시 MemberNum을 세션에 저장
+        if (loggInMember != null)
+        {
+            session.setAttribute("userId", loggInMember.getId());  // 로그인 성공 시 Memberid을 세션에 저장
+
+            session.setAttribute("userseqId", loggInMember.getMemberNum());  // 로그인 성공 시 MemberNum을 세션에 저장 (회원정보 수정시 사용)
             return "로그인 성공";
         } else {
             return "아이디 또는 비밀번호가 잘못되었습니다.";
@@ -113,14 +105,44 @@ public class DefaultController
 //로그아웃 버튼 누르면 이 주소가 호출되고 세션을 종료하고 메인페이지로 리다이렉트
     @GetMapping("/logout")
     @ResponseBody // restful api에서는 redirect를 사용하지 않음
-    public void sessionInvalidate(HttpSession session, HttpServletResponse response) throws IOException {
+    public void sessionInvalidate(HttpSession session, HttpServletResponse response) throws IOException
+    {
         session.invalidate();
         response.sendRedirect("http://localhost:8080");
     }
 
 
 
-//   개인정보 수정(이메일,관심사)
+    //   개인정보 수정(관심사)
+    // 로그인이 되어있는 사람의 세션값을 가지고 와서 그걸 할당하려면?
+//    @GetMapping("/updateInterests")
+    @PutMapping("/updateInterests")
+    @ResponseBody
+    public String updateInterests(@RequestBody Member member, HttpSession session)
+    {
+        try {
+//            로그인 되엇을때 세션에 저장된 userseqId를 가져와서 사용
+            testMapper.updateMember((Integer) session.getAttribute("userseqId"), member.getMainInterest(), member.getSubInterest());
+            return "관심사 업데이트 성공!";
+        } catch (Exception e) {
+            return "관심사 업데이트 실패: " + e.getMessage();
+        }
+    }
+//    회원탈퇴
+
+//    일단 회원id가 나왔으면 좋을것 같음 session.getAttribute("userId")
+    @DeleteMapping("/deleteMember")
+    @ResponseBody
+    public String deleteMember(@RequestBody Member member) {
+        int count = testMapper.checkEmailAndPassword(member.getEmail(), member.getPassword());
+        if (count > 0) {
+            testMapper.deleteMember(member.getEmail(), member.getPassword());
+            return "회원 정보 삭제 성공!";
+        } else {
+            return "이메일 또는 비밀번호가 잘못되었습니다.";
+        }
+    }
+
 
 
 

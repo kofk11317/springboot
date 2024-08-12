@@ -8,15 +8,17 @@ import java.util.List;
 @Mapper
 public interface TestMapper
 {
-   int testConnection();//db 연결 테스트
    List<String> getDescriptions();//뉴스 기사 가져오기
    int  checkEmailExists(String email);
    void SignUp(String id, String password, String name, String email, int age, String gender, String mainInterest, String subInterest);
-   List<CreateNews> selectCreateNewsList();
+   List<CreateNews> selectCreateNewsList(int id);
    List<CreateNews> selectCreateNewsListPaginated(int offset, int limit);
    CreateNews selectCreateNewsDetail(int id);
    long countCreateNews();
    Member SignIn(String id, String password);
+   void updateMember(int memberNum, String mainInterest, String subInterest);
+   void deleteMember(String email, String password);
+   int checkEmailAndPassword(String email, String password);
 }
 
 

@@ -111,4 +111,14 @@ public class ApiController {
                     .body("데이터베이스 연결 실패: " + e.getMessage());
         }
     }
+
+    @GetMapping("/api/createNews/joind/update/{id}")
+    public ResponseEntity<String> updateCreateNewsJoind(@PathVariable int id) {
+        try {
+            testMapper.updateCreateNewsJoind(id);
+            return ResponseEntity.ok("Update completed successfully");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error occurred during update: " + e.getMessage());
+        }
+    }
 }

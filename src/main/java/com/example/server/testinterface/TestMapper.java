@@ -24,6 +24,7 @@ public interface TestMapper
 
 
    List<CreateNews> selectTrendNewsList();
+   void updateCreateNewsJoind(int id);
 }
 
 

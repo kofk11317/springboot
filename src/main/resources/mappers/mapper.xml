@@ -141,4 +141,10 @@
     <select id="countCreateNews" resultType="long">
         SELECT COUNT(*) FROM create_news
     </select>
+
+    <update id="updateCreateNewsJoind">
+        UPDATE CREATE_NEWS
+        SET JOIND = NVL(JOIND, 0) + 1
+        WHERE CREATE_NEWS_NUM = #{id}
+    </update>
 </mapper>

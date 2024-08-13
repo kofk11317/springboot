@@ -88,4 +88,27 @@ public class ApiController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    @GetMapping("/api/createNews/trend/list")
+    @ResponseBody
+    public ResponseEntity<?> getTrendNewsList() {
+        try {
+            List<CreateNews> result = testMapper.selectTrendNewsList();
+
+            List<CreateNews> filteredResult = result.stream()
+                    .filter(news -> news.getTitle() != null && !news.getTitle().isEmpty()
+                            && news.getDescription() != null && !news.getDescription().isEmpty())
+                    .toList();
+
+            // 최대 3개의 항목만 선택
+            List<CreateNews> limitedResult = filteredResult.stream()
+                    .limit(3)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(limitedResult);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("데이터베이스 연결 실패: " + e.getMessage());
+        }
+    }
 }

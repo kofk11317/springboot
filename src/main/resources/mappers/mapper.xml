@@ -115,6 +115,27 @@
         OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
     </select>
 
+    <select id="selectTrendNewsList" resultMap="createNewsResultMap">
+        SELECT CN.*, T.THUMBNAIL_DATA
+        FROM CREATE_NEWS CN
+        JOIN (
+        SELECT CLUSTER_NUM
+        FROM (
+        SELECT COUNT(*) AS NEWS_COUNT, CLUSTER_NUM
+        FROM CLUSTER_NEWS
+        WHERE CLUSTER_NUM IN (
+        SELECT DISTINCT CLUSTER_NUM
+        FROM CLUSTERS
+        WHERE CREATED_AT BETWEEN TRUNC(SYSDATE - 1) AND SYSDATE
+        )
+        GROUP BY CLUSTER_NUM
+        ORDER BY NEWS_COUNT DESC
+        )
+        WHERE ROWNUM <![CDATA[<=]]> 10
+        ) TOP_CLUSTERS ON CN.CLUSTER_NUM = TOP_CLUSTERS.CLUSTER_NUM
+        LEFT JOIN THUMBNAIL T ON CN.CREATE_NEWS_NUM = T.CREATE_NEWS_NUM
+    </select>
+
     <select id="countCreateNews" resultType="long">
         SELECT COUNT(*) FROM create_news
     </select>

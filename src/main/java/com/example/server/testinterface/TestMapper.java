@@ -19,6 +19,11 @@ public interface TestMapper
    void updateMember(int memberNum, String mainInterest, String subInterest);
    void deleteMember(String email, String password);
    int checkEmailAndPassword(String email, String password);
+
+
+
+
+   List<CreateNews> selectTrendNewsList();
 }
 
 

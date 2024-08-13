@@ -21,7 +21,7 @@
 <!--로그인-->
 <!--    dto에 있는 변수명과 db의 변수명이 같아야함-->
     <select id="SignIn" resultType="com.example.server.dto.Member">
-        SELECT MEMBER_NUM as memberNum ,id,password,name,email,age,gender FROM MEMBER WHERE id = #{id} AND password = #{password}
+        SELECT MEMBER_NUM as memberNum ,id,password,name,email,age,gender,MAIN_INTEREST as mainInterest,SUB_INTEREST as subInterest FROM MEMBER WHERE id = #{id} AND password = #{password}
     </select>
 
 
@@ -44,6 +44,8 @@
     <delete id="deleteMember" parameterType="com.example.server.dto.Member">
         DELETE FROM MEMBER WHERE email = #{email} AND password = #{password}
     </delete>
+
+
 
 
     <!-- 뉴스기사 -->

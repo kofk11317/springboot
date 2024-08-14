@@ -21,6 +21,40 @@ public class ApiController {
     @Autowired
     private TestMapper testMapper;
 
+    @GetMapping("/api/user/validation/id")
+    @ResponseBody
+    public ResponseEntity<?> checkIDExists(@RequestParam String id) {
+        Map<String, String> response = new HashMap<>();
+        try {
+            if (testMapper.checkIDExists(id) > 0) {
+                response.put("result", "중복");
+            } else {
+                response.put("result", "사용가능");
+            }
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("error", "데이터베이스 연결 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @GetMapping("/api/user/validation/email")
+    @ResponseBody
+    public ResponseEntity<?> checkEmailExists(@RequestParam String email) {
+        Map<String, String> response = new HashMap<>();
+        try {
+            if (testMapper.checkEmailExists(email) > 0) {
+                response.put("result", "중복");
+            } else {
+                response.put("result", "사용가능");
+            }
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("error", "데이터베이스 연결 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
     @GetMapping("/api/createNews/list")
     @ResponseBody
     public ResponseEntity<?> getCreateNewsList(@RequestParam(defaultValue = "0") int page,

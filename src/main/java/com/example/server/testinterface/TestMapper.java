@@ -23,7 +23,7 @@ public interface TestMapper
 
 
 
-
+   int checkIDExists(String id);
    List<CreateNews> selectTrendNewsList();
    void updateCreateNewsJoind(int id);
 }

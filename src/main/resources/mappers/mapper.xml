@@ -46,6 +46,10 @@
     </delete>
 
 
+    <!-- 회원 가입 -->
+    <select id="checkIDExists" resultType="int">
+        SELECT COUNT(*) FROM MEMBER WHERE ID = #{id}
+    </select>
 
 
     <!-- 뉴스기사 -->

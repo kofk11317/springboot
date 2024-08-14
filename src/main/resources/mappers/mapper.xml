@@ -117,6 +117,32 @@
         OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
     </select>
 
+    <select id="selectCreateNewsListByCategoryPaginated" resultMap="createNewsResultMap">
+        SELECT *
+        FROM (
+        SELECT
+        cn.CREATE_NEWS_NUM,
+        cn.CATEGORY,
+        cn.CREATE_NEWS_DATE,
+        cn.TITLE,
+        cn.DESCRIPTION,
+        cn.JOIND,
+        cn.LIKE_COUNT,
+        cn.DISLIKE_COUNT,
+        cn.PUB_DATE,
+        cn.KEYWORD,
+        cn.CLUSTER_NUM,
+        cn.LITERARY_STYLE,
+        cn.THUMBNAIL_PROMPT,
+        th.THUMBNAIL_DATA
+        FROM CREATE_NEWS cn
+        LEFT JOIN THUMBNAIL th ON cn.CREATE_NEWS_NUM = th.CREATE_NEWS_NUM
+        WHERE cn.CATEGORY = #{category}
+        ORDER BY cn.CREATE_NEWS_NUM DESC
+        )
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
     <select id="selectTrendNewsList" resultMap="createNewsResultMap">
         SELECT CN.*, T.THUMBNAIL_DATA
         FROM CREATE_NEWS CN

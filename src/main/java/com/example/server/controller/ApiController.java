@@ -56,6 +56,58 @@ public class ApiController {
         }
     }
 
+    @GetMapping("/api/createNews/list/{category}")
+    @ResponseBody
+    public ResponseEntity<?> getCreateNewsListByCategory(@RequestParam(defaultValue = "0") int page,
+                                               @RequestParam(defaultValue = "10") int size,
+                                               @PathVariable String category) {
+        try {
+            int offset = page * size;
+
+            String mappedCategory;
+            switch (category) {
+                case "culture":
+                    mappedCategory = "생활/문화";
+                    break;
+                case "society":
+                    mappedCategory = "정치/사회";
+                    break;
+                case "science":
+                    mappedCategory = "IT과학";
+                    break;
+                default:
+                    return ResponseEntity.badRequest().body("Invalid category");
+            }
+
+            List<CreateNews> result = testMapper.selectCreateNewsListByCategoryPaginated(offset, size, mappedCategory);
+
+            List<CreateNews> filteredResult = result.stream()
+                    .filter(news -> news.getTitle() != null && !news.getTitle().isEmpty()
+                            && news.getDescription() != null && !news.getDescription().isEmpty())
+                    .toList();
+
+            for (CreateNews news : filteredResult) {
+                if (news.getThumbnailData() != null) {
+                    news.setThumbnailURL("/api/createNews/thumbnail/" + news.getCreateNewsNum());
+                }
+            }
+
+            long totalCount = testMapper.countCreateNews();
+            int totalPages = (int) Math.ceil((double) totalCount / size);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("content", filteredResult);
+            response.put("currentPage", page);
+            response.put("totalItems", totalCount);
+            response.put("totalPages", totalPages);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("데이터베이스 연결 실패: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/api/createNews/detail/{id}")
     @ResponseBody
     public ResponseEntity<?> getCreateNewsDetail(@PathVariable int id) {

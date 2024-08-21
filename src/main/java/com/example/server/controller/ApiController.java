@@ -362,4 +362,41 @@ public class ApiController {
                     .body(errorResponse);
         }
     }
+
+    @GetMapping("/api/createNews/related/list/{id}")
+    @ResponseBody
+    public ResponseEntity<?> getRelatedNews(@PathVariable int id) {
+        try {
+            CreateNews createNews = testMapper.selectCreateNewsDetail(id);
+            String keyword = createNews.getKeyword();
+            String[] keywords = keyword.split(",");
+
+            Map<String, List<CreateNews>> response = new HashMap<>();
+            List<CreateNews> relatedNewsList = new ArrayList<>();
+
+            for (String kw : keywords) {
+                kw = kw.trim();
+                List<CreateNews> list = testMapper.selectRelatedNews(kw);
+
+                for (CreateNews news : list) {
+                    if (!relatedNewsList.contains(news) && news.getCreateNewsNum() != id) {
+                        relatedNewsList.add(news);
+                        if (relatedNewsList.size() == 3) {
+                            response.put("relatedNews", relatedNewsList);
+                            return ResponseEntity.ok(response);
+                        }
+                    }
+                }
+            }
+
+            // 3개 미만의 관련 뉴스를 찾았을 경우
+            response.put("relatedNews", relatedNewsList);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "데이터베이스 연결 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
+    }
 }

@@ -34,4 +34,5 @@ public interface TestMapper
    void updateLike(int memberNum, int newsId, int like);
    int selectAllLike(int newsId);
    int selectAllDislike(int newsId);
+   List<CreateNews> selectRelatedNews(String query);
 }

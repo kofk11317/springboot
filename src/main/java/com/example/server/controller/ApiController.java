@@ -148,10 +148,53 @@ public class ApiController {
         }
     }
 
+    @GetMapping("/api/createNews/list/search")
+    @ResponseBody
+    public ResponseEntity<?> getCreateNewsListBySearch(@RequestParam(defaultValue = "0") int page,
+                                                         @RequestParam(defaultValue = "10") int size,
+                                                         @RequestParam String query) {
+        try {
+            int offset = page * size;
+
+            List<CreateNews> result = testMapper.selectCreateNewsListBySearchPaginated(offset, size, query);
+
+            List<CreateNews> filteredResult = result.stream()
+                    .filter(news -> news.getTitle() != null && !news.getTitle().isEmpty()
+                            && news.getDescription() != null && !news.getDescription().isEmpty())
+                    .toList();
+
+            for (CreateNews news : filteredResult) {
+                if (news.getThumbnailData() != null) {
+                    news.setThumbnailURL("/api/createNews/thumbnail/" + news.getCreateNewsNum());
+                }
+            }
+
+            long totalCount = testMapper.countCreateNews();
+            int totalPages = (int) Math.ceil((double) totalCount / size);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("content", filteredResult);
+            response.put("currentPage", page);
+            response.put("totalItems", totalCount);
+            response.put("totalPages", totalPages);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("데이터베이스 연결 실패: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/api/createNews/detail/{id}")
     @ResponseBody
-    public ResponseEntity<?> getCreateNewsDetail(@PathVariable int id) {
+    public ResponseEntity<?> getCreateNewsDetail(@PathVariable int id, @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
+            if (authHeader != null) {
+                String token = jwtService.extractToken(authHeader);
+
+                // member 가져와서 member_join에 insert 하기
+            }
+
             CreateNews createNews = testMapper.selectCreateNewsDetail(id);
             if (createNews != null) {
                 if(createNews.getThumbnailData() != null) {

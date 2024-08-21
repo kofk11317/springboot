@@ -14,6 +14,7 @@ public interface TestMapper
    List<CreateNews> selectCreateNewsList(int id);
    List<CreateNews> selectCreateNewsListPaginated(int offset, int limit);
    List<CreateNews> selectCreateNewsListByCategoryPaginated(int offset, int limit, String category);
+   List<CreateNews> selectCreateNewsListBySearchPaginated(int offset, int limit, String query);
    CreateNews selectCreateNewsDetail(int id);
    long countCreateNews();
    Member SignIn(String id, String password);

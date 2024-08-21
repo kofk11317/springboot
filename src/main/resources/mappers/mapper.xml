@@ -51,6 +51,10 @@
         SELECT COUNT(*) FROM MEMBER WHERE ID = #{id}
     </select>
 
+    <select id="findByUserId" resultType="com.example.server.dto.Member">
+        SELECT MEMBER_NUM as memberNum ,id,password,name,email,age,gender,MAIN_INTEREST as mainInterest,SUB_INTEREST as subInterest FROM MEMBER WHERE id = #{id}
+    </select>
+
 
     <!-- 뉴스기사 -->
     <resultMap id="createNewsResultMap" type="com.example.server.dto.CreateNews">
@@ -75,6 +79,7 @@
         FROM create_news
     </select>
 
+    <!-- 뉴스 디테일 정보 select -->
     <select id="selectCreateNewsDetail" resultMap="createNewsResultMap">
         SELECT
         cn.CREATE_NEWS_NUM,
@@ -96,6 +101,7 @@
         WHERE cn.CREATE_NEWS_NUM = #{id}
     </select>
 
+    <!-- 뉴스 리스트 select(paging) -->
     <select id="selectCreateNewsListPaginated" resultMap="createNewsResultMap">
         SELECT *
             FROM (
@@ -121,6 +127,7 @@
         OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
     </select>
 
+    <!-- 카테고리별 뉴스 리스트 select(paging) -->
     <select id="selectCreateNewsListByCategoryPaginated" resultMap="createNewsResultMap">
         SELECT *
         FROM (
@@ -147,6 +154,7 @@
         OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
     </select>
 
+    <!-- 트렌드 뉴스 기사 리스트 select -->
     <select id="selectTrendNewsList" resultMap="createNewsResultMap">
         SELECT CN.*, T.THUMBNAIL_DATA
         FROM CREATE_NEWS CN
@@ -168,13 +176,49 @@
         LEFT JOIN THUMBNAIL T ON CN.CREATE_NEWS_NUM = T.CREATE_NEWS_NUM
     </select>
 
+    <!-- 전체 뉴스 갯수 select -->
     <select id="countCreateNews" resultType="long">
         SELECT COUNT(*) FROM create_news
     </select>
 
+    <!-- 뉴스 조회수 업데이트 -->
     <update id="updateCreateNewsJoind">
         UPDATE CREATE_NEWS
         SET JOIND = NVL(JOIND, 0) + 1
         WHERE CREATE_NEWS_NUM = #{id}
     </update>
+
+    <!-- 좋아요 or 싫어요(like 1:좋아요, 2:싫어요, 3:선택안함)-->
+    <insert id="insertLike">
+        INSERT INTO LIKE_NEWS (LIKE_NUM, MEMBER_NUM, LIKE_AT, CREATE_NEWS_NUM, LIKE_OR_NOT)
+        VALUES (SEQ_LIKE_NUM.NEXTVAL, #{memberNum}, SYSTIMESTAMP, #{newsId}, #{like})
+    </insert>
+
+    <!-- 좋아요 or 싫어요 조회 -->
+    <select id="selectLike" resultType="java.lang.Integer">
+        SELECT LIKE_OR_NOT
+        FROM LIKE_NEWS
+        WHERE MEMBER_NUM = #{memberNum} AND CREATE_NEWS_NUM = #{newsId}
+    </select>
+
+    <!-- 좋아요 or 싫어요 update -->
+    <update id="updateLike">
+        UPDATE LIKE_NEWS
+        SET LIKE_OR_NOT = #{like}
+        WHERE MEMBER_NUM = #{memberNum} AND CREATE_NEWS_NUM = #{newsId}
+    </update>
+
+    <!-- 뉴스의 좋아요 갯수 조회 -->
+    <select id="selectAllLike" resultType="int">
+        SELECT COUNT(*)
+        FROM LIKE_NEWS
+        WHERE CREATE_NEWS_NUM = #{newsId} AND LIKE_OR_NOT = 1
+    </select>
+
+    <!-- 뉴스의 싫어요 갯수 조회 -->
+    <select id="selectAllDislike" resultType="int">
+        SELECT COUNT(*)
+        FROM LIKE_NEWS
+        WHERE CREATE_NEWS_NUM = #{newsId} AND LIKE_OR_NOT = 2
+    </select>
 </mapper>

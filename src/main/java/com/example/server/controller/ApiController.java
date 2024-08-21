@@ -1,16 +1,16 @@
 package com.example.server.controller;
 
 import com.example.server.dto.CreateNews;
+import com.example.server.dto.Member;
+import com.example.server.service.JwtService;
 import com.example.server.testinterface.TestMapper;
+import com.example.server.token.JwtIssueService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,6 +20,12 @@ public class ApiController {
 
     @Autowired
     private TestMapper testMapper;
+
+    @Autowired
+    private JwtIssueService jwtIssueService;
+
+    @Autowired
+    private JwtService jwtService;
 
     @GetMapping("/api/user/validation/id")
     @ResponseBody
@@ -205,6 +211,112 @@ public class ApiController {
             return ResponseEntity.ok("Update completed successfully");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Error occurred during update: " + e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/api/createNews/like/update/{id}")
+    @ResponseBody
+    public ResponseEntity<?> updateLikeToNews(@PathVariable int id, @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = jwtService.extractToken(authHeader);
+            if (token == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 제공되지 않았습니다.");
+            }
+
+            String userId = jwtService.validateTokenAndGetUserId(token);
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+            }
+
+            Member member = testMapper.findByUserId(userId);
+            if (member == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
+            }
+
+            Integer result = testMapper.selectLike(member.getMemberNum(), id);
+
+
+            if(result == null) { // result가 0이면 like 가 없다는 뜻
+                testMapper.insertLike(member.getMemberNum(), id, 1);
+            } else if(result == 1) { // LIKE_OR_NOT을 3으로
+                testMapper.updateLike(member.getMemberNum(), id, 3);
+            } else if(result == 2 || result == 3) { // LIKE_OR_NOT을 1로
+                testMapper.updateLike(member.getMemberNum(), id, 1);
+            }
+
+            return ResponseEntity.ok("좋아요 업데이트 성공");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("데이터베이스 연결 실패: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/api/createNews/dislike/update/{id}")
+    @ResponseBody
+    public ResponseEntity<?> updateDislikeToNews(@PathVariable int id, @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = jwtService.extractToken(authHeader);
+            if (token == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 제공되지 않았습니다.");
+            }
+
+            String userId = jwtService.validateTokenAndGetUserId(token);
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+            }
+
+            Member member = testMapper.findByUserId(userId);
+            if (member == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
+            }
+
+            Integer result = testMapper.selectLike(member.getMemberNum(), id);
+
+            if(result == null) { // result가 0이면 like 가 없다는 뜻
+                testMapper.insertLike(member.getMemberNum(), id, 2);
+            } else if(result == 2) { // LIKE_OR_NOT을 3으로
+                testMapper.updateLike(member.getMemberNum(), id, 3);
+            } else if(result == 1 || result == 3) { // LIKE_OR_NOT을 2로
+                testMapper.updateLike(member.getMemberNum(), id, 2);
+            }
+
+            return ResponseEntity.ok("싫어요 업데이트 성공");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("데이터베이스 연결 실패: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/api/createNews/like/get/{id}")
+    @ResponseBody
+    public ResponseEntity<?> getLikeFromNews(@PathVariable int id) {
+        try {
+            int result = testMapper.selectAllLike(id);
+            Map<String, Integer> response = new HashMap<>();
+            response.put("count", result);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "데이터베이스 연결 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
+    }
+
+    @GetMapping("/api/createNews/dislike/get/{id}")
+    @ResponseBody
+    public ResponseEntity<?> getDislikeFromNews(@PathVariable int id) {
+        try {
+            int result = testMapper.selectAllDislike(id);
+            Map<String, Integer> response = new HashMap<>();
+            response.put("count", result);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "데이터베이스 연결 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
         }
     }
 }

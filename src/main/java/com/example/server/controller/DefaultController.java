@@ -1,7 +1,9 @@
 package com.example.server.controller;
 
 import com.example.server.dto.Member;
+import com.example.server.service.JwtService;
 import com.example.server.testinterface.TestMapper;
+import com.example.server.token.JwtIssueService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -24,6 +26,11 @@ import java.util.Map;
 public class DefaultController
 {
 
+    @Autowired
+    private JwtIssueService jwtIssueService;
+
+    @Autowired
+    private JwtService jwtService;
 
 
     @GetMapping("/")
@@ -79,36 +86,25 @@ public class DefaultController
     }
 
 
-
-
-
-//로그인이 되어야지만 사용가능한 기능들
     @PostMapping("/signin")
     @ResponseBody
-    public String login(@RequestBody Member member, HttpSession session, RedirectAttributes redirectAttributes , HttpServletRequest request)
+    public ResponseEntity<?> login(@RequestBody Member member, HttpSession session, RedirectAttributes redirectAttributes, HttpServletRequest request)
     {
-        Member loggInMember = testMapper.SignIn(member.getId(), member.getPassword());
+        Member loggedInMember = testMapper.SignIn(member.getId(), member.getPassword());
 
-//       멤버 객체에서 필요한 것만 뽑아다 사용가능
-        if (loggInMember != null)
+        if (loggedInMember != null)
         {
-            session.setAttribute("userId", loggInMember.getId());  // 로그인 성공 시 Memberid을 세션에 저장
-            session.setAttribute("userEmail", loggInMember.getEmail());
-            session.setAttribute("userName", loggInMember.getName());
-            session.setAttribute("userAge", loggInMember.getAge());
-            session.setAttribute("userGender", loggInMember.getGender());
-            session.setAttribute("userMainInterest", loggInMember.getMainInterest());
-            session.setAttribute("userSubInterest", loggInMember.getSubInterest());
+            String token = jwtIssueService.createJwt(loggedInMember);
 
-            session.setAttribute("userseqId", loggInMember.getMemberNum());  // 로그인 성공 시 MemberNum을 세션에 저장 (회원정보 수정시 사용)
-            return loggInMember.getId();
+            Map<String, String> response = new HashMap<>();
+            response.put("userId", loggedInMember.getId());
+            response.put("token", token);
+
+            return ResponseEntity.ok(response);
         } else {
-            return "아이디 또는 비밀번호가 잘못되었습니다.";
+            return ResponseEntity.badRequest().body("아이디 또는 비밀번호가 잘못되었습니다.");
         }
     }
-
-
-
 
 
     //로그아웃기능 구현-세션종료 형식으로
@@ -116,9 +112,8 @@ public class DefaultController
 //로그아웃 버튼 누르면 이 주소가 호출되고 세션을 종료하고 메인페이지로 리다이렉트
     @GetMapping("/logout")
     @ResponseBody // restful api에서는 redirect를 사용하지 않음
-    public void sessionInvalidate(HttpSession session, HttpServletResponse response) throws IOException
+    public void sessionInvalidate(HttpServletResponse response) throws IOException
     {
-        session.invalidate();
         response.sendRedirect("http://localhost:8080");
     }
 
@@ -128,49 +123,58 @@ public class DefaultController
     // 로그인이 되어있는 사람의 세션값을 가지고 와서 그걸 할당하려면?
     @PutMapping("/updateInterests")
     @ResponseBody
-    public String updateInterests(@RequestBody Member member, HttpSession session)
-    {
+    public ResponseEntity<?> updateInterests(@RequestBody Member member, @RequestHeader("Authorization") String authHeader) {
         try {
-//            로그인 되엇을때 세션에 저장된 userseqId를 가져와서 사용
+            String token = jwtService.extractToken(authHeader);
+            if (token == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 제공되지 않았습니다.");
+            }
 
-            testMapper.updateMember((Integer) session.getAttribute("userseqId"), member.getMainInterest(), member.getSubInterest());
-            return "관심사 업데이트 성공!";
+            String userId = jwtService.validateTokenAndGetUserId(token);
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+            }
+
+            Member _member = testMapper.findByUserId(userId);
+            if (_member == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
+            }
+
+            testMapper.updateMember(_member.getMemberNum(), member.getMainInterest(), member.getSubInterest());
+            return ResponseEntity.ok("사용자 정보 업데이트 성공!");
         } catch (Exception e) {
-            return "관심사 업데이트 실패: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("사용자 정보 업데이트 실패: " + e.getMessage());
         }
     }
+
 //    개인정보 수정
-        @GetMapping("/updateInterests")
+    @GetMapping("/updateInterests")
     @ResponseBody
-    public ResponseEntity<?> updateInterestsGetMapping(HttpSession session)
-    {
+    public ResponseEntity<?> updateInterestsGetMapping(@RequestHeader("Authorization") String authHeader) {
+        String token = jwtService.extractToken(authHeader);
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 제공되지 않았습니다.");
+        }
 
-//        이름 이메일 나이 성별 관심사
-        String userEmail = (String) session.getAttribute("userEmail");
-        String userName = (String) session.getAttribute("userName");
-        int userAge = (Integer) session.getAttribute("userAge");
-        String userGender = (String) session.getAttribute("userGender");
-        String userMainInterest = (String) session.getAttribute("userMainInterest");
-        String userSubInterest = (String) session.getAttribute("userSubInterest");
+        String userId = jwtService.validateTokenAndGetUserId(token);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+        }
 
-
-
-        if (userName == null || userEmail == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("로그인해주세요");
+        Member member = testMapper.findByUserId(userId);
+        if (member == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
         }
 
         Map<String, String> response = new HashMap<>();
-        response.put("userName", userName);
-        response.put("userEmail", userEmail);
-        response.put("userAge", String.valueOf(userAge));
-        response.put("userGender", userGender);
-        response.put("userMainInterest", userMainInterest);
-        response.put("userSubInterest", userSubInterest);
+        response.put("name", member.getName());
+        response.put("email", member.getEmail());
+        response.put("age", String.valueOf(member.getAge()));
+        response.put("gender", member.getGender());
+        response.put("mainInterest", member.getMainInterest());
+        response.put("subInterest", member.getSubInterest());
 
         return ResponseEntity.ok(response);
-
-
-
     }
 
 
@@ -209,80 +213,5 @@ public class DefaultController
 
         return ResponseEntity.ok(response);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

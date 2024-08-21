@@ -23,9 +23,14 @@ public interface TestMapper
 
 
 
+   Member findByUserId(String id);
    int checkIDExists(String id);
    List<CreateNews> selectTrendNewsList();
    void updateCreateNewsJoind(int id);
+
+   void insertLike(int memberNum, int newsId, int like);
+   Integer selectLike(int memberNum, int newsId);
+   void updateLike(int memberNum, int newsId, int like);
+   int selectAllLike(int newsId);
+   int selectAllDislike(int newsId);
 }
-
-

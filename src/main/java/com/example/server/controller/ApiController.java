@@ -189,12 +189,6 @@ public class ApiController {
     @ResponseBody
     public ResponseEntity<?> getCreateNewsDetail(@PathVariable int id, @RequestHeader(value = "Authorization", required = false) String authHeader) {
         try {
-            if (authHeader != null) {
-                String token = jwtService.extractToken(authHeader);
-
-                // member 가져와서 member_join에 insert 하기
-            }
-
             CreateNews createNews = testMapper.selectCreateNewsDetail(id);
             if (createNews != null) {
                 if(createNews.getThumbnailData() != null) {
@@ -241,6 +235,39 @@ public class ApiController {
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(limitedResult);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("데이터베이스 연결 실패: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/api/createNews/log/update/{id}")
+    @ResponseBody
+    public ResponseEntity<?> createLogOfCreateNews(@PathVariable int id, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        try {
+            String token = jwtService.extractToken(authHeader);
+            if (token == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 제공되지 않았습니다.");
+            }
+
+            String userId = jwtService.validateTokenAndGetUserId(token);
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+            }
+
+            Member member = testMapper.findByUserId(userId);
+            if (member == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
+            }
+
+            CreateNews createNews = testMapper.selectCreateNewsDetail(id);
+            if (createNews != null) {
+                testMapper.insertMemberJoin(member.getMemberNum(), id, createNews.getCategory(), createNews.getKeyword());
+                return ResponseEntity.ok("로그 남기기 성공");
+            }
+            else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("뉴스를 찾을 수 없습니다.");
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("데이터베이스 연결 실패: " + e.getMessage());

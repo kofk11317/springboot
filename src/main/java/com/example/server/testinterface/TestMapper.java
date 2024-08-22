@@ -29,6 +29,7 @@ public interface TestMapper
    List<CreateNews> selectTrendNewsList();
    void updateCreateNewsJoind(int id);
 
+   void insertMemberJoin(int memberNum, int newsId, String category, String keyword);
    void insertLike(int memberNum, int newsId, int like);
    Integer selectLike(int memberNum, int newsId);
    void updateLike(int memberNum, int newsId, int like);

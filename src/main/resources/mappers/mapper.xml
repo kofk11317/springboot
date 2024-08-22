@@ -215,6 +215,11 @@
         WHERE CREATE_NEWS_NUM = #{id}
     </update>
 
+    <insert id="insertMemberJoin">
+        INSERT INTO MEMBER_JOIN (MEMBER_JOIN_NUM, MEMBER_NUM, CREATE_NEWS_NUM, JOIN_AT, CATEGORY, KEYWORD)
+        VALUES (SEQ_MEMBER_JOIN_NUM.NEXTVAL, #{memberNum}, #{newsId}, SYSTIMESTAMP, #{category}, #{keyword})
+    </insert>
+
     <!-- 좋아요 or 싫어요(like 1:좋아요, 2:싫어요, 3:선택안함)-->
     <insert id="insertLike">
         INSERT INTO LIKE_NEWS (LIKE_NUM, MEMBER_NUM, LIKE_AT, CREATE_NEWS_NUM, LIKE_OR_NOT)

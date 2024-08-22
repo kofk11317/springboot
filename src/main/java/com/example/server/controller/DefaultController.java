@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
@@ -20,6 +19,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 //192.168.0.81
 
 @Controller
@@ -100,6 +106,24 @@ public class DefaultController
             response.put("userId", loggedInMember.getId());
             response.put("token", token);
 
+//
+////            Flask 서버와 통신
+//            WebClient webClient = WebClient.create();
+//            Map<String, Integer> map = new HashMap<>();
+////            flask에서 받을 때 변수명이 memberNum으로
+//            map.put("memberNum", loggedInMember.getMemberNum());
+//            //로그인한 사용자의 memberNum을 Flask 서버에 전달
+//            Mono<Integer[]> flask = webClient.post()
+//                    .uri( "http://127.0.0.1:5000") //메서드를 사용하여 요청을 보낼 URL을 설정합니다 Flask 서버 URL을 적절하게 변경 필요
+//                    .bodyValue(map)//메서드를 사용하여 요청 본문을 설정합니다. 이 예제에서는 map이라는 Map 객체를 요청 본문으로 사용합니다.
+//                    .retrieve()//메서드를 호출하여 HTTP 요청을 보냅니다. 이 메서드는 WebClient.ResponseSpec 객체를 반환합니다. 이 객체는 HTTP 응답을 처리하는 메서드를 제공합니다.
+//                    .bodyToMono(Integer[].class);//메서드를 사용하여 HTTP 응답 본문을 Mono로 변환합니다. 이 메서드는 HTTP 응답 본문을 지정된 클래스 타입으로 변환한 Mono를 반환합니다. 이 예제에서는 응답 본문을 String으로 변환합니다
+//
+//            flask.subscribe(result -> {
+//                for (Integer num : result) {
+//                    System.out.println(num);}
+//            });
+//            Mono는 0 또는 1개의 결과를 발행하는 Publisher로, 비동기 작업의 결과를 처리하는데 사용됩니다.
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.badRequest().body("아이디 또는 비밀번호가 잘못되었습니다.");

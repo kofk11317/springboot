@@ -276,4 +276,32 @@
         WHERE cn.KEYWORD LIKE '%' || #{query} || '%'
         ORDER BY cn.CREATE_NEWS_NUM DESC
     </select>
+
+    <!-- 카테고리별 랭킹 기사 리스트 -->
+    <select id="selectCategoryRankingNews" resultMap="createNewsResultMap">
+        SELECT *
+        FROM (
+        SELECT
+        cn.CREATE_NEWS_NUM,
+        cn.CATEGORY,
+        cn.CREATE_NEWS_DATE,
+        cn.TITLE,
+        cn.DESCRIPTION,
+        cn.JOIND,
+        cn.LIKE_COUNT,
+        cn.DISLIKE_COUNT,
+        cn.PUB_DATE,
+        cn.KEYWORD,
+        cn.CLUSTER_NUM,
+        cn.LITERARY_STYLE,
+        cn.THUMBNAIL_PROMPT,
+        th.THUMBNAIL_DATA,
+        ROW_NUMBER() OVER (ORDER BY cn.JOIND, cn.CREATE_NEWS_NUM DESC) AS rn
+        FROM CREATE_NEWS cn
+        LEFT JOIN THUMBNAIL th ON cn.CREATE_NEWS_NUM = th.CREATE_NEWS_NUM
+        WHERE cn.CATEGORY = #{category}
+<!--        AND cn.PUB_DATE <![CDATA[<=]]> TRUNC(SYSDATE) - 1-->
+        )
+        WHERE rn <![CDATA[<=]]> 2
+    </select>
 </mapper>

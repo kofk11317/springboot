@@ -64,7 +64,7 @@ public class ApiController {
     @GetMapping("/api/createNews/list")
     @ResponseBody
     public ResponseEntity<?> getCreateNewsList(@RequestParam(defaultValue = "0") int page,
-                                     @RequestParam(defaultValue = "10") int size) {
+                                     @RequestParam(defaultValue = "5") int size) {
         try {
             int offset = page * size;
             List<CreateNews> result = testMapper.selectCreateNewsListPaginated(offset, size);
@@ -99,7 +99,7 @@ public class ApiController {
     @GetMapping("/api/createNews/list/{category}")
     @ResponseBody
     public ResponseEntity<?> getCreateNewsListByCategory(@RequestParam(defaultValue = "0") int page,
-                                               @RequestParam(defaultValue = "10") int size,
+                                               @RequestParam(defaultValue = "5") int size,
                                                @PathVariable String category) {
         try {
             int offset = page * size;
@@ -151,7 +151,7 @@ public class ApiController {
     @GetMapping("/api/createNews/list/search")
     @ResponseBody
     public ResponseEntity<?> getCreateNewsListBySearch(@RequestParam(defaultValue = "0") int page,
-                                                         @RequestParam(defaultValue = "10") int size,
+                                                         @RequestParam(defaultValue = "5") int size,
                                                          @RequestParam String query) {
         try {
             int offset = page * size;
@@ -216,6 +216,24 @@ public class ApiController {
                     .body(news.getThumbnailData());
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/api/createNews/category/ranking/list")
+    @ResponseBody
+    public ResponseEntity<?> getCategoryRankingNewsList() {
+        try {
+            Map<String, List<CreateNews>> map = new HashMap<>();
+            List<CreateNews> result = testMapper.selectCategoryRankingNews("생활/문화");
+            map.put("생활/문화", result);
+            result = testMapper.selectCategoryRankingNews("정치/사회");
+            map.put("정치/사회", result);
+            result = testMapper.selectCategoryRankingNews("IT과학");
+            map.put("IT과학", result);
+            return ResponseEntity.ok(map);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("데이터베이스 연결 실패: " + e.getMessage());
+        }
     }
 
     @GetMapping("/api/createNews/trend/list")
@@ -381,6 +399,42 @@ public class ApiController {
             int result = testMapper.selectAllDislike(id);
             Map<String, Integer> response = new HashMap<>();
             response.put("count", result);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "데이터베이스 연결 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
+    }
+
+    @GetMapping("/api/createNews/like/check/{id}")
+    @ResponseBody
+    public ResponseEntity<?> checkLikeOrDislikeFromNews(@PathVariable int id, @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = jwtService.extractToken(authHeader);
+            if (token == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 제공되지 않았습니다.");
+            }
+
+            String userId = jwtService.validateTokenAndGetUserId(token);
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+            }
+
+            Member member = testMapper.findByUserId(userId);
+            if (member == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
+            }
+
+            Integer result = testMapper.selectLike(member.getMemberNum(), id);
+
+            if(result == null || result == 3)
+                result = 0;
+
+            Map<String, Integer> response = new HashMap<>();
+
+            response.put("result", result);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> errorResponse = new HashMap<>();

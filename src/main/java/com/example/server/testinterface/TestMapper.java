@@ -36,4 +36,5 @@ public interface TestMapper
    int selectAllLike(int newsId);
    int selectAllDislike(int newsId);
    List<CreateNews> selectRelatedNews(String query);
+   List<CreateNews> selectCategoryRankingNews(String category);
 }

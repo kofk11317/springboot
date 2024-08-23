@@ -122,6 +122,7 @@
                 th.THUMBNAIL_DATA
                 FROM CREATE_NEWS cn
                 LEFT JOIN THUMBNAIL th ON cn.CREATE_NEWS_NUM = th.CREATE_NEWS_NUM
+                WHERE TITLE IS NOT NULL AND DESCRIPTION IS NOT NULL
                 ORDER BY cn.CREATE_NEWS_NUM DESC
         )
         OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
@@ -148,7 +149,7 @@
         th.THUMBNAIL_DATA
         FROM CREATE_NEWS cn
         LEFT JOIN THUMBNAIL th ON cn.CREATE_NEWS_NUM = th.CREATE_NEWS_NUM
-        WHERE cn.CATEGORY = #{category}
+        WHERE cn.CATEGORY = #{category} AND TITLE IS NOT NULL AND DESCRIPTION IS NOT NULL
         ORDER BY cn.CREATE_NEWS_NUM DESC
         )
         OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
@@ -175,7 +176,7 @@
         th.THUMBNAIL_DATA
         FROM CREATE_NEWS cn
         LEFT JOIN THUMBNAIL th ON cn.CREATE_NEWS_NUM = th.CREATE_NEWS_NUM
-        WHERE cn.KEYWORD LIKE '%' || #{query} || '%'
+        WHERE cn.KEYWORD LIKE '%' || #{query} || '%' AND TITLE IS NOT NULL AND DESCRIPTION IS NOT NULL
         ORDER BY cn.CREATE_NEWS_NUM DESC
         )
         OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY

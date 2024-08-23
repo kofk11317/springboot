@@ -64,17 +64,17 @@ public class ApiController {
     @GetMapping("/api/createNews/list")
     @ResponseBody
     public ResponseEntity<?> getCreateNewsList(@RequestParam(defaultValue = "0") int page,
-                                     @RequestParam(defaultValue = "5") int size) {
+                                     @RequestParam(defaultValue = "2") int size) {
         try {
             int offset = page * size;
             List<CreateNews> result = testMapper.selectCreateNewsListPaginated(offset, size);
 
-            List<CreateNews> filteredResult = result.stream()
-                    .filter(news -> news.getTitle() != null && !news.getTitle().isEmpty()
-                            && news.getDescription() != null && !news.getDescription().isEmpty())
-                    .toList();
+//            List<CreateNews> filteredResult = result.stream()
+//                    .filter(news -> news.getTitle() != null && !news.getTitle().isEmpty()
+//                            && news.getDescription() != null && !news.getDescription().isEmpty())
+//                    .toList();
 
-            for (CreateNews news : filteredResult) {
+            for (CreateNews news : result) {
                 if (news.getThumbnailData() != null) {
                     news.setThumbnailURL("/api/createNews/thumbnail/" + news.getCreateNewsNum());
                 }
@@ -84,7 +84,7 @@ public class ApiController {
             int totalPages = (int) Math.ceil((double) totalCount / size);
 
             Map<String, Object> response = new HashMap<>();
-            response.put("content", filteredResult);
+            response.put("content", result);
             response.put("currentPage", page);
             response.put("totalItems", totalCount);
             response.put("totalPages", totalPages);
@@ -463,6 +463,11 @@ public class ApiController {
                     if (!relatedNewsList.contains(news) && news.getCreateNewsNum() != id) {
                         relatedNewsList.add(news);
                         if (relatedNewsList.size() == 3) {
+                            for (CreateNews _news : relatedNewsList) {
+                                if (_news.getThumbnailData() != null) {
+                                    _news.setThumbnailURL("/api/createNews/thumbnail/" + _news.getCreateNewsNum());
+                                }
+                            }
                             response.put("relatedNews", relatedNewsList);
                             return ResponseEntity.ok(response);
                         }

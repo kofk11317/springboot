@@ -259,6 +259,26 @@ public class ApiController {
         }
     }
 
+    @GetMapping("/api/createNews/recommend/list")
+    @ResponseBody
+    public ResponseEntity<?> getRecommendNewsList(@RequestParam String recommend) {
+        try {
+            List<CreateNews> result = new ArrayList<>();
+            if(!recommend.isEmpty()) {
+                String[] articlesIds = recommend.split(",");
+                for(String id: articlesIds){
+                    CreateNews news = testMapper.selectCreateNewsDetail(Integer.parseInt(id));
+                    news.setThumbnailURL("/api/createNews/thumbnail/" + news.getCreateNewsNum());
+                    result.add(news);
+                }
+            }
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("데이터베이스 연결 실패: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/api/createNews/log/update/{id}")
     @ResponseBody
     public ResponseEntity<?> createLogOfCreateNews(@PathVariable int id, @RequestHeader(value = "Authorization", required = false) String authHeader) {
@@ -461,13 +481,9 @@ public class ApiController {
 
                 for (CreateNews news : list) {
                     if (!relatedNewsList.contains(news) && news.getCreateNewsNum() != id) {
+                        news.setThumbnailURL("/api/createNews/thumbnail/" + news.getCreateNewsNum());
                         relatedNewsList.add(news);
                         if (relatedNewsList.size() == 3) {
-                            for (CreateNews _news : relatedNewsList) {
-                                if (_news.getThumbnailData() != null) {
-                                    _news.setThumbnailURL("/api/createNews/thumbnail/" + _news.getCreateNewsNum());
-                                }
-                            }
                             response.put("relatedNews", relatedNewsList);
                             return ResponseEntity.ok(response);
                         }

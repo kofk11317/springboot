@@ -99,7 +99,7 @@ public class ApiController {
     @GetMapping("/api/createNews/list/{category}")
     @ResponseBody
     public ResponseEntity<?> getCreateNewsListByCategory(@RequestParam(defaultValue = "0") int page,
-                                               @RequestParam(defaultValue = "5") int size,
+                                               @RequestParam(defaultValue = "2") int size,
                                                @PathVariable String category) {
         try {
             int offset = page * size;
@@ -151,7 +151,7 @@ public class ApiController {
     @GetMapping("/api/createNews/list/search")
     @ResponseBody
     public ResponseEntity<?> getCreateNewsListBySearch(@RequestParam(defaultValue = "0") int page,
-                                                         @RequestParam(defaultValue = "5") int size,
+                                                         @RequestParam(defaultValue = "2") int size,
                                                          @RequestParam String query) {
         try {
             int offset = page * size;

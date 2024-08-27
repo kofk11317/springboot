@@ -148,8 +148,10 @@ public class DefaultController
 
             Map<String, String> response = new HashMap<>();
             response.put("userId", loggedInMember.getId());
+            response.put("username", loggedInMember.getName());
             response.put("token", token);
 
+            try{
             // Flask 서버와 통신
             WebClient webClient = WebClient.create();
             Map<String, Integer> map = new HashMap<>();
@@ -176,7 +178,9 @@ public class DefaultController
                 // 결과를 response에 추가
                 response.put("recommendedArticles", limitedResult);
             }
-
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.badRequest().body("아이디 또는 비밀번호가 잘못되었습니다.");
